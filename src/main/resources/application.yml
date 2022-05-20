@@ -1,0 +1,9 @@
+micronaut:
+  application:
+    name: natsBase
+nats.addresses:
+- nats://localhost:4222
+netty:
+  default:
+    allocator:
+      max-order: 3
