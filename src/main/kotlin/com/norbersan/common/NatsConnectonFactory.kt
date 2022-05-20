@@ -18,8 +18,9 @@ class NatsConnectionFactory {
         jwt: String,
         seed: String
     ): Connection {
-        log.info("GetNatsConnection Noberto")
-        log.info("host: $host port: port adresses: $server" )
+        log.info("host: $host" )
+        log.info("port: $port" )
+        log.info("adresses: $server" )
         log.info("jwt: $jwt" )
         log.info("seed: $seed" )
         val token = Nats.staticCredentials(jwt.toCharArray(), seed.toCharArray())
@@ -48,7 +49,7 @@ class NatsConnectionFactory {
                 publishNoAck(false) // messages must be ack
             }.build()
         ).also {
-            log.info("JetStream: ${it}")
+            log.info("Called NatsConnectionFactory.jetStream: ${it}")
         }
     }
 
@@ -59,7 +60,7 @@ class NatsConnectionFactory {
                 publishNoAck(false) // messages must be ack
             }.build()
         ).also {
-            log.info("JetStreamManagement: ${it}")
+            log.info("Called NatsConnectionFactory.jetStreamManagement: ${it}")
         }
     }
 }

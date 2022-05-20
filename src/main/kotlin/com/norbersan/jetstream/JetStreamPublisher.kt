@@ -3,20 +3,20 @@ package com.norbersan.jetstream
 import io.nats.client.JetStream
 import org.slf4j.LoggerFactory
 
-class JetStreamPublisher(val js: JetStream, vararg val subjects: String) {
+class JetStreamPublisher(private val js: JetStream, private vararg val subjects: String) {
     val log = LoggerFactory.getLogger(javaClass)
 
     fun publish(bytes: ByteArray){
         subjects.forEach {
+            log.info("JetStream sync-publication -> subject: ${it}; message: ${String(bytes)}")
             js.publish(it, bytes)
-            log.info("JetStream sync-pub subject: ${it}; message: ${String(bytes)}")
         }
     }
 
     fun publishAsync(bytes: ByteArray){
         subjects.forEach {
+            log.info("JetStream async-publication -> subject: ${it}; message: ${String(bytes)}")
             js.publishAsync(it, bytes)
-            log.info("JetStream async-pub subject: ${it}; message: ${String(bytes)}")
         }
     }
 }
