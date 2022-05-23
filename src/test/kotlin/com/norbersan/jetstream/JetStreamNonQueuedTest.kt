@@ -2,8 +2,10 @@ package com.norbersan.jetstream
 
 import com.norbersan.common.NatsConnectionFactory
 import com.norbersan.common.createStream
+import com.norbersan.common.deleteStreamIfExists
 import io.nats.client.Connection
 import io.nats.client.MessageHandler
+import io.nats.client.api.RetentionPolicy
 import io.nats.client.api.StorageType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -27,10 +29,11 @@ class JetStreamNonQueuedTest {
 
         Assertions.assertNotNull(jsm)
 
-        jsm!!.createStream("test", StorageType.Memory, "subject.test")
+        jsm!!.deleteStreamIfExists("test")
+        jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
         val publisher = JetStreamPublisher(js, "subject.test")
-        val subscriber = JetStreamSubscriber(conn, js, "test", mapOf("subject.test" to
+        val subscriber = JetStreamSubscriber(conn, js, "test", "subject.test",
                 MessageHandler{
                     if (it.isJetStream){
                         Assertions.assertTrue(counter.decrementAndGet() == 0)
@@ -38,7 +41,7 @@ class JetStreamNonQueuedTest {
                     } else{
                         log.info("received message no jetstream")
                     }
-                }))
+                })
 
         counter.incrementAndGet()
         publisher.publish("test message".encodeToByteArray())
@@ -57,10 +60,11 @@ class JetStreamNonQueuedTest {
 
         Assertions.assertNotNull(jsm)
 
-        jsm!!.createStream("test", StorageType.Memory, "subject.test")
+        jsm!!.deleteStreamIfExists("test")
+        jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
         val publisher = JetStreamPublisher(js, "subject.test")
-        val subscriber = JetStreamSubscriber(conn, js, "test", mapOf("subject.test" to
+        val subscriber = JetStreamSubscriber(conn, js, "test", "subject.test",
                 MessageHandler{
                     if (it.isJetStream){
                         Assertions.assertTrue(counter.decrementAndGet() == 0)
@@ -68,7 +72,7 @@ class JetStreamNonQueuedTest {
                     } else{
                         log.info("received message no jetstream")
                     }
-                }))
+                })
 
         counter.incrementAndGet()
         publisher.publishAsync("test message".encodeToByteArray())
@@ -87,22 +91,23 @@ class JetStreamNonQueuedTest {
 
         Assertions.assertNotNull(jsm)
 
-        jsm!!.createStream("test", StorageType.Memory, "subject.test")
+        jsm!!.deleteStreamIfExists("test")
+        jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
         val publisher = JetStreamPublisher(js, "subject.test")
 
-        val map = mapOf("subject.test" to
+        val handler =
                 MessageHandler{
                     if (it.isJetStream){
                         log.info("received message #${counter.incrementAndGet()} subject: ${it.subject}, data: ${String(it.data)}")
                     } else{
                         log.info("received message no jetstream")
                     }
-                })
+                }
 
-        val subscriber1 = JetStreamSubscriber(conn, js, "test", map)
-        val subscriber2 = JetStreamSubscriber(conn, js, "test", map)
-        val subscriber3 = JetStreamSubscriber(conn, js, "test", map)
+        val subscriber1 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber2 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber3 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
 
         publisher.publish("test message".encodeToByteArray())
 
@@ -120,22 +125,23 @@ class JetStreamNonQueuedTest {
 
         Assertions.assertNotNull(jsm)
 
-        jsm!!.createStream("test", StorageType.Memory, "subject.test")
+        jsm!!.deleteStreamIfExists("test")
+        jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
         val publisher = JetStreamPublisher(js, "subject.test")
 
-        val map = mapOf("subject.test" to
+        val handler =
                 MessageHandler{
                     if (it.isJetStream){
                         log.info("received message #${counter.incrementAndGet()} subject: ${it.subject}, data: ${String(it.data)}")
                     } else{
                         log.info("received message no jetstream")
                     }
-                })
+                }
 
-        val subscriber1 = JetStreamSubscriber(conn, js, "test", map)
-        val subscriber2 = JetStreamSubscriber(conn, js, "test", map)
-        val subscriber3 = JetStreamSubscriber(conn, js, "test", map)
+        val subscriber1 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber2 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber3 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
 
         publisher.publishAsync("test message".encodeToByteArray())
 

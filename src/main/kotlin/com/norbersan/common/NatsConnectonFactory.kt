@@ -1,6 +1,7 @@
 package com.norbersan.common
 
 import io.nats.client.*
+import io.nats.client.api.RetentionPolicy
 import io.nats.client.api.StorageType
 import io.nats.client.api.StreamConfiguration
 import io.nats.client.api.StreamInfo
@@ -16,7 +17,8 @@ class NatsConnectionFactory {
         port: String,
         server: String,
         jwt: String,
-        seed: String
+        seed: String,
+        name: String = "default"
     ): Connection {
         log.info("host: $host" )
         log.info("port: $port" )
@@ -36,6 +38,8 @@ class NatsConnectionFactory {
                 if (!jwt.isNullOrEmpty() && !seed.isNullOrEmpty()) {
                     authHandler(Nats.staticCredentials(jwt.toCharArray(), seed.toCharArray()))
                 }
+                connectionName(name)
+                this.noEcho()
             }.build()
         ).also {
             log.info("connected to nats: ${it.connectedUrl}; status: ${it.status}")
@@ -67,15 +71,34 @@ class NatsConnectionFactory {
 
 fun JetStreamManagement.createStream(
     name: String,
+    retention: RetentionPolicy = RetentionPolicy.WorkQueue,
     storageType: StorageType = StorageType.File,
-    vararg subjects: String
+    vararg subjects: String,
 ): StreamInfo? {
     return this.addStream(
         StreamConfiguration.builder()
             .name(name)
+            .retentionPolicy(retention)
             .subjects(*subjects)
             .storageType(storageType)
             .maxAge(Duration.ofDays(30))
             .build()
     )
+}
+fun JetStreamManagement.deleteStreamIfExists(streamName: String){
+    kotlin.runCatching {
+        this.deleteStream(streamName)
+    }
+}
+
+fun JetStreamManagement.logStreamsAndConsumers(header: String){
+    val log = LoggerFactory.getLogger(this.javaClass)
+    log.info(header)
+    log.info("Total Streams : ${streams.size}")
+    streams.forEach { streamInfo ->
+        log.info(streamInfo.toString())
+        this.getConsumers(streamInfo.configuration.name).forEach{ consumerInfo ->
+            log.info(consumerInfo.toString())
+        }
+    }
 }

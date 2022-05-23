@@ -8,18 +8,22 @@ import io.nats.client.api.AckPolicy
 import io.nats.client.api.ConsumerConfiguration
 import java.time.Duration
 
-class JetStreamSubscriber(nc: Connection, js: JetStream, streamName: String, subjects: Map<String, MessageHandler>) {
+class JetStreamSubscriber(nc: Connection,
+                          js: JetStream,
+                          streamName: String,
+                          subject: String,
+                          handler: MessageHandler) {
+    private val dispatcher = nc.createDispatcher()
+    private val consumerConf: ConsumerConfiguration = ConsumerConfiguration.builder().apply {
+        durable("${subject.replace('.','@')}")
+        ackPolicy(AckPolicy.Explicit)
+        ackWait(Duration.ofSeconds(60))
+    }.build()
+    val pushOpts = PushSubscribeOptions.builder()
+        .configuration(consumerConf)
+        .build()
+
     init {
-        subjects.entries.forEach{
-            js.subscribe(it.key, nc.createDispatcher(), it.value, false,
-                PushSubscribeOptions.builder().apply {
-                    configuration(ConsumerConfiguration.builder()
-                        .durable(it.key.replace('.', '@'))
-                        .ackPolicy(AckPolicy.Explicit)
-                        .ackWait(Duration.ofSeconds(60))
-                        .build())
-                }.build()
-            )
-        }
+        js.subscribe(subject, dispatcher, handler, false, pushOpts)
     }
 }
