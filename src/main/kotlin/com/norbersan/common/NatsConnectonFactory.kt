@@ -87,6 +87,11 @@ fun JetStreamManagement.createStream(
 }
 fun JetStreamManagement.deleteStreamIfExists(streamName: String){
     kotlin.runCatching {
+        this.getConsumerNames(streamName).forEach {
+            this.deleteConsumer(streamName,it)
+        }
+    }
+    kotlin.runCatching {
         this.deleteStream(streamName)
     }
 }

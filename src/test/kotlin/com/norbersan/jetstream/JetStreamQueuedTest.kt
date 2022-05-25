@@ -26,9 +26,7 @@ class JetStreamQueuedTest {
     @Test
     fun `single message published synchronously and received by one single subscriber out of three`(){
         val conn: Connection = factory.getConnection("localhost", "","","","")
-        val conn2: Connection = factory.getConnection("localhost", "","","","", "other")
         val js = factory.jetStream(conn)
-        val js2 = factory.jetStream(conn)
         val jsm = factory.jetStreamManagement(conn)
         val counter = AtomicInteger(0)
 
@@ -52,16 +50,14 @@ class JetStreamQueuedTest {
             }
         }
 
-        val subscriber1 = JetStreamQueuedSubscriber(conn2, js2, "test","subject.test", "queue", handler)
-        val subscriber2 = JetStreamQueuedSubscriber(conn2, js2, "test","subject.test", "queue", handler)
-        val subscriber3 = JetStreamQueuedSubscriber(conn2, js2, "test","subject.test", "queue", handler)
+        val subscriber1 = JetStreamQueuedSubscriber(conn, js, "test","subject.test", "queue", handler)
+        val subscriber2 = JetStreamQueuedSubscriber(conn, js, "test","subject.test", "queue", handler)
+        val subscriber3 = JetStreamQueuedSubscriber(conn, js, "test","subject.test", "queue", handler)
 
         jsm!!.logStreamsAndConsumers("After objects subscribed, before any publication")
-        Thread {
-            publisher.publish("test message".encodeToByteArray())
-            conn.flush(Duration.ofMillis(500))
-            conn2.flush(Duration.ofMillis(500))
-        }.start()
+
+        publisher.publish("test message".encodeToByteArray())
+        conn.flush(Duration.ofMillis(500))
 
         TimeUnit.SECONDS.sleep(10)
         jsm!!.logStreamsAndConsumers("After first message published")

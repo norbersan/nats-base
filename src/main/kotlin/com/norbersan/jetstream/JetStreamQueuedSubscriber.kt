@@ -9,6 +9,7 @@ import io.nats.client.api.ConsumerConfiguration
 import io.nats.client.api.DeliverPolicy
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.util.*
 
 class JetStreamQueuedSubscriber(val nc: Connection,
                                 js: JetStream,
@@ -18,11 +19,17 @@ class JetStreamQueuedSubscriber(val nc: Connection,
                                 handler: MessageHandler) {
 
     private val dispatcher = nc.createDispatcher()
+    private val durableName = "${queue}@@@${subject.replace('.','@')}"
+    //private val durableName = UUID.randomUUID().toString()
     private val consumerConf: ConsumerConfiguration = ConsumerConfiguration.builder().apply {
-        durable("${queue}@@@${subject.replace('.','@')}")
+        durable(durableName)
         ackPolicy(AckPolicy.Explicit)
+        deliverGroup(queue)
         ackWait(Duration.ofSeconds(60))
         deliverPolicy(DeliverPolicy.All)
+        if (!nc.jetStreamManagement().getConsumerNames(streamName).contains(durableName)){
+            rateLimit(32)
+        }
     }.build()
     val pushOpts = PushSubscribeOptions.builder()
         .configuration(consumerConf)
@@ -30,13 +37,6 @@ class JetStreamQueuedSubscriber(val nc: Connection,
 
     init {
         val subscription = js.subscribe(subject, queue, dispatcher, handler, false, pushOpts)
-        //val subscription = js.subscribe(subject, queue, pushOpts)
         nc.flush(Duration.ofMillis(500))
-//        Thread{
-//            while(true){
-//                LoggerFactory.getLogger(javaClass).info("asking server for messages")
-//                handler.onMessage(subscription.nextMessage(Duration.ofSeconds(2)))
-//            }
-//        }.start()
     }
 }
