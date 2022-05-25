@@ -6,7 +6,6 @@ import io.nats.client.api.StorageType
 import io.nats.client.api.StreamConfiguration
 import io.nats.client.api.StreamInfo
 import org.slf4j.LoggerFactory
-import java.io.IOException
 import java.time.Duration
 
 class NatsConnectionFactory {
@@ -25,7 +24,6 @@ class NatsConnectionFactory {
         log.info("adresses: $server" )
         log.info("jwt: $jwt" )
         log.info("seed: $seed" )
-        val token = Nats.staticCredentials(jwt.toCharArray(), seed.toCharArray())
         return  Nats.connect(
             Options.Builder().apply {
                 if (host.isNullOrEmpty()) {
@@ -39,7 +37,8 @@ class NatsConnectionFactory {
                     authHandler(Nats.staticCredentials(jwt.toCharArray(), seed.toCharArray()))
                 }
                 connectionName(name)
-                this.noEcho()
+                //noEcho()
+                pedantic()
             }.build()
         ).also {
             log.info("connected to nats: ${it.connectedUrl}; status: ${it.status}")
