@@ -7,16 +7,14 @@ import io.nats.client.PushSubscribeOptions
 import io.nats.client.api.AckPolicy
 import io.nats.client.api.ConsumerConfiguration
 import io.nats.client.api.DeliverPolicy
-import org.slf4j.LoggerFactory
 import java.time.Duration
-import java.util.*
 
-class JetStreamQueuedSubscriber(val nc: Connection,
-                                js: JetStream,
-                                streamName: String,
-                                subject: String,
-                                queue: String,
-                                handler: MessageHandler) {
+class JSQueuedPushSubscriber(val nc: Connection,
+                             js: JetStream,
+                             streamName: String,
+                             subject: String,
+                             queue: String,
+                             handler: MessageHandler) {
 
     private val dispatcher = nc.createDispatcher()
     private val durableName = "${queue}@@@${subject.replace('.','@')}"

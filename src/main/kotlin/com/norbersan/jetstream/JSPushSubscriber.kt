@@ -9,11 +9,11 @@ import io.nats.client.api.ConsumerConfiguration
 import java.time.Duration
 import java.util.UUID
 
-class JetStreamSubscriber(nc: Connection,
-                          js: JetStream,
-                          streamName: String,
-                          subject: String,
-                          handler: MessageHandler) {
+class JSPushSubscriber(nc: Connection,
+                       js: JetStream,
+                       streamName: String,
+                       subject: String,
+                       handler: MessageHandler) {
     private val dispatcher = nc.createDispatcher()
 //    private val durableName = "${subject.replace('.','@')}"
     private val durableName = UUID.randomUUID().toString()
@@ -22,8 +22,8 @@ class JetStreamSubscriber(nc: Connection,
         ackPolicy(AckPolicy.Explicit)
         ackWait(Duration.ofSeconds(60))
         if (!nc.jetStreamManagement().getConsumerNames(streamName).contains(durableName)){
-            rateLimit(32)
-            flowControl(250)
+            rateLimit(5000)
+            //flowControl(250)
         }
     }.build()
     val pushOpts = PushSubscribeOptions.builder()

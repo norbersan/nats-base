@@ -14,9 +14,8 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.thread
 
-class JetStreamQueuedTest {
+class JSNonQueuedPullTest {
     val log = LoggerFactory.getLogger(javaClass)
 
     companion object{
@@ -24,7 +23,7 @@ class JetStreamQueuedTest {
     }
 
     @Test
-    fun `single message published synchronously and received by one single subscriber out of three`(){
+    fun `single message published synchronously and received by all three subscribers`(){
         val conn: Connection = factory.getConnection("localhost", "","","","")
         val js = factory.jetStream(conn)
         val jsm = factory.jetStreamManagement(conn)
@@ -35,24 +34,26 @@ class JetStreamQueuedTest {
         jsm!!.logStreamsAndConsumers("At the beginning of the test")
         Assertions.assertNotNull(jsm)
 
-        jsm!!.createStream("test", RetentionPolicy.WorkQueue, StorageType.Memory, "subject.test")
+        jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
         jsm!!.logStreamsAndConsumers("After creating stream, before any object subscribed")
-        val publisher = JetStreamPublisher(js, "subject.test")
+        val publisher = JSPublisher(js, "subject.test")
         val handler = MessageHandler{
             if (it == null){
+                log.info("received null message")
                 return@MessageHandler
             } else if (it.isJetStream){
                 counter.incrementAndGet()
                 log.info("received message subject: ${it.subject}, data: ${String(it.data)}")
+                it.ack()
             } else {
                 log.info("received message no jetstream")
             }
         }
 
-        val subscriber1 = JetStreamQueuedSubscriber(conn, js, "test","subject.test", "queue", handler)
-        val subscriber2 = JetStreamQueuedSubscriber(conn, js, "test","subject.test", "queue", handler)
-        val subscriber3 = JetStreamQueuedSubscriber(conn, js, "test","subject.test", "queue", handler)
+        val subscriber1 = JSPullSubscriber(conn, js, "test","subject.test", handler)
+        val subscriber2 = JSPullSubscriber(conn, js, "test","subject.test", handler)
+        val subscriber3 = JSPullSubscriber(conn, js, "test","subject.test", handler)
 
         jsm!!.logStreamsAndConsumers("After objects subscribed, before any publication")
 
@@ -61,7 +62,9 @@ class JetStreamQueuedTest {
 
         TimeUnit.SECONDS.sleep(10)
         jsm!!.logStreamsAndConsumers("After first message published")
-        Assertions.assertEquals("Received 1 message(s)", "Received ${counter.get()} message(s)")
+
+        arrayOf(subscriber1,subscriber2,subscriber3).forEach { it.stop() }
+        Assertions.assertEquals("Received 3 message(s)", "Received ${counter.get()} message(s)")
 
         jsm!!.logStreamsAndConsumers("At the end of the test")
     }

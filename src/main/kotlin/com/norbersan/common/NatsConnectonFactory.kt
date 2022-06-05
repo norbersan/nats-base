@@ -101,7 +101,7 @@ fun JetStreamManagement.logStreamsAndConsumers(header: String){
     log.info("Total Streams : ${streams.size}")
     streams.forEach { streamInfo ->
         log.info(streamInfo.toString())
-        this.getConsumers(streamInfo.configuration.name).forEach{ consumerInfo ->
+            getConsumers(streamInfo.configuration.name).forEach{ consumerInfo ->
             log.info(consumerInfo.toString())
         }
     }

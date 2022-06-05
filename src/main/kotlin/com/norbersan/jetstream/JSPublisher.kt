@@ -3,7 +3,7 @@ package com.norbersan.jetstream
 import io.nats.client.JetStream
 import org.slf4j.LoggerFactory
 
-class JetStreamPublisher(private val js: JetStream, private vararg val subjects: String) {
+class JSPublisher(private val js: JetStream, private vararg val subjects: String) {
     val log = LoggerFactory.getLogger(javaClass)
 
     fun publish(bytes: ByteArray){

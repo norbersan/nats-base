@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-class JetStreamNonQueuedThrottledTest {
+class JSNonQueuedPushThrottledTest {
     val log = LoggerFactory.getLogger(javaClass)
 
     companion object{
@@ -32,7 +32,7 @@ class JetStreamNonQueuedThrottledTest {
         jsm!!.deleteStreamIfExists("test")
         jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
-        val publisher = JetStreamPublisher(js, "subject.test")
+        val publisher = JSPublisher(js, "subject.test")
 
         val handler =
             MessageHandler{
@@ -50,12 +50,12 @@ class JetStreamNonQueuedThrottledTest {
                 it.ack()
             }
 
-        val subscriber1 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
-        val subscriber2 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
-        val subscriber3 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber1 = JSPushSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber2 = JSPushSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber3 = JSPushSubscriber(conn, js, "test", "subject.test", handler)
 
         (1..100).forEach{ _ ->
-            publisher.publish("*".repeat(6000).encodeToByteArray())
+            publisher.publish("*".repeat(600).encodeToByteArray()) // 600 * 8 = 4800 bits payload each message
         }
 
         TimeUnit.SECONDS.sleep(10)

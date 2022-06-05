@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-class JetStreamNonQueuedTest {
+class JSNonQueuedPushTest {
     val log = LoggerFactory.getLogger(javaClass)
 
     companion object{
@@ -32,8 +32,8 @@ class JetStreamNonQueuedTest {
         jsm!!.deleteStreamIfExists("test")
         jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
-        val publisher = JetStreamPublisher(js, "subject.test")
-        val subscriber = JetStreamSubscriber(conn, js, "test", "subject.test") {
+        val publisher = JSPublisher(js, "subject.test")
+        val subscriber = JSPushSubscriber(conn, js, "test", "subject.test") {
                     if (it.isJetStream){
                         Assertions.assertTrue(counter.decrementAndGet() == 0)
                         log.info("received message subject: ${it.subject}, data: ${String(it.data)}")
@@ -62,8 +62,8 @@ class JetStreamNonQueuedTest {
         jsm!!.deleteStreamIfExists("test")
         jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
-        val publisher = JetStreamPublisher(js, "subject.test")
-        val subscriber = JetStreamSubscriber(conn, js, "test", "subject.test") {
+        val publisher = JSPublisher(js, "subject.test")
+        val subscriber = JSPushSubscriber(conn, js, "test", "subject.test") {
             if (it.isJetStream) {
                 Assertions.assertTrue(counter.decrementAndGet() == 0)
                 log.info("received message subject: ${it.subject}, data: ${String(it.data)}")
@@ -92,7 +92,7 @@ class JetStreamNonQueuedTest {
         jsm!!.deleteStreamIfExists("test")
         jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
-        val publisher = JetStreamPublisher(js, "subject.test")
+        val publisher = JSPublisher(js, "subject.test")
 
         val handler =
                 MessageHandler{
@@ -103,9 +103,9 @@ class JetStreamNonQueuedTest {
                     }
                 }
 
-        val subscriber1 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
-        val subscriber2 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
-        val subscriber3 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber1 = JSPushSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber2 = JSPushSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber3 = JSPushSubscriber(conn, js, "test", "subject.test", handler)
 
         publisher.publish("test message".encodeToByteArray())
 
@@ -126,7 +126,7 @@ class JetStreamNonQueuedTest {
         jsm!!.deleteStreamIfExists("test")
         jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
-        val publisher = JetStreamPublisher(js, "subject.test")
+        val publisher = JSPublisher(js, "subject.test")
 
         val handler =
             MessageHandler{
@@ -137,9 +137,9 @@ class JetStreamNonQueuedTest {
                 }
             }
 
-        val subscriber1 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
-        val subscriber2 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
-        val subscriber3 = JetStreamSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber1 = JSPushSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber2 = JSPushSubscriber(conn, js, "test", "subject.test", handler)
+        val subscriber3 = JSPushSubscriber(conn, js, "test", "subject.test", handler)
 
         publisher.publishAsync("test message".encodeToByteArray())
 
