@@ -9,25 +9,34 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 
 class NatsConnectionFactory {
-    val log = LoggerFactory.getLogger(javaClass)
+    private val log = LoggerFactory.getLogger(javaClass)
 
     fun getConnection(
-        host: String,
-        port: String,
-        server: String,
-        jwt: String,
-        seed: String,
+        host: String? = null,
+        port: String? = null,
+        server: String? = null,
+        servers: List<String>? = null,
+        jwt: String? = null,
+        seed: String? = null,
         name: String = "default"
     ): Connection {
         log.info("host: $host" )
         log.info("port: $port" )
-        log.info("adresses: $server" )
+        log.info("server: $server" )
+        log.info("servers: $servers" )
         log.info("jwt: $jwt" )
         log.info("seed: $seed" )
         return  Nats.connect(
             Options.Builder().apply {
+                //TODO fix conditions
                 if (host.isNullOrEmpty()) {
-                    server(server)
+                    if (!server.isNullOrEmpty()) {
+                        server(server)
+                    } else if (!servers.isNullOrEmpty()){
+                        servers(servers.toTypedArray())
+                    } else{
+                        server("nats://localhost:4222")
+                    }
                 } else if (port.isNullOrEmpty()) {
                     server("nats://$host:4222")
                 } else {
@@ -37,7 +46,6 @@ class NatsConnectionFactory {
                     authHandler(Nats.staticCredentials(jwt.toCharArray(), seed.toCharArray()))
                 }
                 connectionName(name)
-                //noEcho()
                 pedantic()
             }.build()
         ).also {

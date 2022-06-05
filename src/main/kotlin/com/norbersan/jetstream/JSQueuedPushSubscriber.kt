@@ -9,7 +9,7 @@ import io.nats.client.api.ConsumerConfiguration
 import io.nats.client.api.DeliverPolicy
 import java.time.Duration
 
-class JSQueuedPushSubscriber(val nc: Connection,
+class JSQueuedPushSubscriber(private val nc: Connection,
                              js: JetStream,
                              streamName: String,
                              subject: String,
@@ -18,7 +18,6 @@ class JSQueuedPushSubscriber(val nc: Connection,
 
     private val dispatcher = nc.createDispatcher()
     private val durableName = "${queue}@@@${subject.replace('.','@')}"
-    //private val durableName = UUID.randomUUID().toString()
     private val consumerConf: ConsumerConfiguration = ConsumerConfiguration.builder().apply {
         durable(durableName)
         ackPolicy(AckPolicy.Explicit)

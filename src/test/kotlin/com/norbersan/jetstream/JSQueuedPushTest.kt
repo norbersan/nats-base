@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 class JSQueuedPushTest {
-    val log = LoggerFactory.getLogger(javaClass)
+    private val log = LoggerFactory.getLogger(javaClass)
 
     companion object{
         val factory = NatsConnectionFactory()
@@ -24,19 +24,19 @@ class JSQueuedPushTest {
 
     @Test
     fun `single message published synchronously and received by one single subscriber out of three`(){
-        val conn: Connection = factory.getConnection("localhost", "","","","")
+        val conn: Connection = factory.getConnection(host = "localhost")
         val js = factory.jetStream(conn)
         val jsm = factory.jetStreamManagement(conn)
         val counter = AtomicInteger(0)
 
         jsm!!.deleteStreamIfExists("test")
 
-        jsm!!.logStreamsAndConsumers("At the beginning of the test")
+        jsm.logStreamsAndConsumers("At the beginning of the test")
         Assertions.assertNotNull(jsm)
 
-        jsm!!.createStream("test", RetentionPolicy.WorkQueue, StorageType.Memory, "subject.test")
+        jsm.createStream("test", RetentionPolicy.WorkQueue, StorageType.Memory, "subject.test")
 
-        jsm!!.logStreamsAndConsumers("After creating stream, before any object subscribed")
+        jsm.logStreamsAndConsumers("After creating stream, before any object subscribed")
         val publisher = JSPublisher(js, "subject.test")
         val handler = MessageHandler{
             if (it == null){
@@ -53,15 +53,15 @@ class JSQueuedPushTest {
         val subscriber2 = JSQueuedPushSubscriber(conn, js, "test","subject.test", "queue", handler)
         val subscriber3 = JSQueuedPushSubscriber(conn, js, "test","subject.test", "queue", handler)
 
-        jsm!!.logStreamsAndConsumers("After objects subscribed, before any publication")
+        jsm.logStreamsAndConsumers("After objects subscribed, before any publication")
 
         publisher.publish("test message".encodeToByteArray())
         conn.flush(Duration.ofMillis(500))
 
         TimeUnit.SECONDS.sleep(10)
-        jsm!!.logStreamsAndConsumers("After first message published")
+        jsm.logStreamsAndConsumers("After first message published")
         Assertions.assertEquals("Received 1 message(s)", "Received ${counter.get()} message(s)")
 
-        jsm!!.logStreamsAndConsumers("At the end of the test")
+        jsm.logStreamsAndConsumers("At the end of the test")
     }
 }

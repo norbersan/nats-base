@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 class JSNonQueuedPushThrottledTest {
-    val log = LoggerFactory.getLogger(javaClass)
+    private val log = LoggerFactory.getLogger(javaClass)
 
     companion object{
         val factory = NatsConnectionFactory()
@@ -22,7 +22,7 @@ class JSNonQueuedPushThrottledTest {
 
     @Test
     fun `throttled messages`(){
-        val conn: Connection = factory.getConnection("localhost", "","","","")
+        val conn: Connection = factory.getConnection(host = "localhost")
         val js = factory.jetStream(conn)
         val jsm = factory.jetStreamManagement(conn)
         val counter = AtomicInteger(0)
@@ -30,7 +30,7 @@ class JSNonQueuedPushThrottledTest {
         Assertions.assertNotNull(jsm)
 
         jsm!!.deleteStreamIfExists("test")
-        jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
+        jsm.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
         val publisher = JSPublisher(js, "subject.test")
 
@@ -60,6 +60,6 @@ class JSNonQueuedPushThrottledTest {
 
         TimeUnit.SECONDS.sleep(10)
         Assertions.assertEquals("Received 300 message(s)", "Received ${counter.get()} message(s)")
-        jsm!!.deleteStreamIfExists("test")
+        jsm.deleteStreamIfExists("test")
     }
 }

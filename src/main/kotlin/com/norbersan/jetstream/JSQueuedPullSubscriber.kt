@@ -4,13 +4,12 @@ import io.nats.client.Connection
 import io.nats.client.JetStream
 import io.nats.client.MessageHandler
 import io.nats.client.PullSubscribeOptions
-import io.nats.client.PushSubscribeOptions
 import io.nats.client.api.AckPolicy
 import io.nats.client.api.ConsumerConfiguration
 import io.nats.client.api.DeliverPolicy
 import java.time.Duration
 
-class JSQueuedPullSubscriber(val nc: Connection,
+class JSQueuedPullSubscriber(nc: Connection,
                              js: JetStream,
                              streamName: String,
                              subject: String,

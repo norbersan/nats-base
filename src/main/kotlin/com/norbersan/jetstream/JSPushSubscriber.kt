@@ -15,7 +15,6 @@ class JSPushSubscriber(nc: Connection,
                        subject: String,
                        handler: MessageHandler) {
     private val dispatcher = nc.createDispatcher()
-//    private val durableName = "${subject.replace('.','@')}"
     private val durableName = UUID.randomUUID().toString()
     private val consumerConf: ConsumerConfiguration = ConsumerConfiguration.builder().apply {
         durable(durableName)
@@ -23,7 +22,6 @@ class JSPushSubscriber(nc: Connection,
         ackWait(Duration.ofSeconds(60))
         if (!nc.jetStreamManagement().getConsumerNames(streamName).contains(durableName)){
             rateLimit(5000)
-            //flowControl(250)
         }
     }.build()
     val pushOpts = PushSubscribeOptions.builder()

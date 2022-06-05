@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 class JSNonQueuedPushTest {
-    val log = LoggerFactory.getLogger(javaClass)
+    private val log = LoggerFactory.getLogger(javaClass)
 
     companion object{
         val factory = NatsConnectionFactory()
@@ -22,7 +22,7 @@ class JSNonQueuedPushTest {
 
     @Test
     fun `single message published synchronously and received by single subscriber`(){
-        val conn: Connection = factory.getConnection("localhost", "","","","")
+        val conn: Connection = factory.getConnection(host = "localhost")
         val js = factory.jetStream(conn)
         val jsm = factory.jetStreamManagement(conn)
         val counter = AtomicInteger(0)
@@ -30,7 +30,7 @@ class JSNonQueuedPushTest {
         Assertions.assertNotNull(jsm)
 
         jsm!!.deleteStreamIfExists("test")
-        jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
+        jsm.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
         val publisher = JSPublisher(js, "subject.test")
         val subscriber = JSPushSubscriber(conn, js, "test", "subject.test") {
@@ -47,12 +47,12 @@ class JSNonQueuedPushTest {
 
         TimeUnit.SECONDS.sleep(1)
         Assertions.assertTrue(counter.get() == 0)
-        jsm!!.deleteStreamIfExists("test")
+        jsm.deleteStreamIfExists("test")
     }
 
     @Test
     fun `single message published asynchronously and received by single subscriber`(){
-        val conn: Connection = factory.getConnection("localhost", "","","","")
+        val conn: Connection = factory.getConnection(host = "localhost")
         val js = factory.jetStream(conn)
         val jsm = factory.jetStreamManagement(conn)
         val counter = AtomicInteger(0)
@@ -60,7 +60,7 @@ class JSNonQueuedPushTest {
         Assertions.assertNotNull(jsm)
 
         jsm!!.deleteStreamIfExists("test")
-        jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
+        jsm.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
         val publisher = JSPublisher(js, "subject.test")
         val subscriber = JSPushSubscriber(conn, js, "test", "subject.test") {
@@ -77,12 +77,12 @@ class JSNonQueuedPushTest {
 
         TimeUnit.SECONDS.sleep(1)
         Assertions.assertTrue(counter.get() == 0)
-        jsm!!.deleteStreamIfExists("test")
+        jsm.deleteStreamIfExists("test")
     }
 
     @Test
     fun `single message published synchronously and received by three subscribers`(){
-        val conn: Connection = factory.getConnection("localhost", "","","","")
+        val conn: Connection = factory.getConnection(host = "localhost")
         val js = factory.jetStream(conn)
         val jsm = factory.jetStreamManagement(conn)
         val counter = AtomicInteger(0)
@@ -90,7 +90,7 @@ class JSNonQueuedPushTest {
         Assertions.assertNotNull(jsm)
 
         jsm!!.deleteStreamIfExists("test")
-        jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
+        jsm.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
         val publisher = JSPublisher(js, "subject.test")
 
@@ -111,12 +111,12 @@ class JSNonQueuedPushTest {
 
         TimeUnit.SECONDS.sleep(1)
         Assertions.assertTrue(counter.get() == 3)
-        jsm!!.deleteStreamIfExists("test")
+        jsm.deleteStreamIfExists("test")
     }
 
     @Test
     fun `single message published asynchronously and received by three subscribers`(){
-        val conn: Connection = factory.getConnection("localhost", "","","","")
+        val conn: Connection = factory.getConnection(host = "localhost")
         val js = factory.jetStream(conn)
         val jsm = factory.jetStreamManagement(conn)
         val counter = AtomicInteger(0)
@@ -124,7 +124,7 @@ class JSNonQueuedPushTest {
         Assertions.assertNotNull(jsm)
 
         jsm!!.deleteStreamIfExists("test")
-        jsm!!.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
+        jsm.createStream("test", RetentionPolicy.Interest, StorageType.Memory, "subject.test")
 
         val publisher = JSPublisher(js, "subject.test")
 
@@ -145,7 +145,7 @@ class JSNonQueuedPushTest {
 
         TimeUnit.SECONDS.sleep(1)
         Assertions.assertTrue(counter.get() == 3)
-        jsm!!.deleteStreamIfExists("test")
+        jsm.deleteStreamIfExists("test")
     }
 
 }
