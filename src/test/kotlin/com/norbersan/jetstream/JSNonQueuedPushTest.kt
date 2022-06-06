@@ -46,6 +46,7 @@ class JSNonQueuedPushTest {
         publisher.publish("test message".encodeToByteArray())
 
         TimeUnit.SECONDS.sleep(1)
+        subscriber.preDestroy()
         Assertions.assertTrue(counter.get() == 0)
         jsm.deleteStreamIfExists("test")
     }
@@ -76,6 +77,7 @@ class JSNonQueuedPushTest {
         publisher.publishAsync("test message".encodeToByteArray())
 
         TimeUnit.SECONDS.sleep(1)
+        subscriber.preDestroy()
         Assertions.assertTrue(counter.get() == 0)
         jsm.deleteStreamIfExists("test")
     }
@@ -110,6 +112,9 @@ class JSNonQueuedPushTest {
         publisher.publish("test message".encodeToByteArray())
 
         TimeUnit.SECONDS.sleep(1)
+        subscriber1.preDestroy()
+        subscriber2.preDestroy()
+        subscriber3.preDestroy()
         Assertions.assertTrue(counter.get() == 3)
         jsm.deleteStreamIfExists("test")
     }
@@ -144,6 +149,9 @@ class JSNonQueuedPushTest {
         publisher.publishAsync("test message".encodeToByteArray())
 
         TimeUnit.SECONDS.sleep(1)
+        subscriber1.preDestroy()
+        subscriber2.preDestroy()
+        subscriber3.preDestroy()
         Assertions.assertTrue(counter.get() == 3)
         jsm.deleteStreamIfExists("test")
     }

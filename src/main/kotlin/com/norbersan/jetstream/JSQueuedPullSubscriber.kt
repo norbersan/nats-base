@@ -11,12 +11,11 @@ import java.time.Duration
 
 class JSQueuedPullSubscriber(nc: Connection,
                              js: JetStream,
-                             streamName: String,
                              subject: String,
                              queue: String,
                              handler: MessageHandler) {
 
-    private val durableName = "${queue}@@@${subject.replace('.','@')}"
+    private val durableName = "pull-${queue}@@@${subject.replace('.','@')}"
     private val consumerConf: ConsumerConfiguration = ConsumerConfiguration.builder().apply {
         //ackWait(60*1000) // fails for no reason
         ackPolicy(AckPolicy.Explicit)
@@ -43,7 +42,7 @@ class JSQueuedPullSubscriber(nc: Connection,
         }.start()
     }
 
-    fun stop(){
+    fun predestroy(){
         started = false
     }
 }

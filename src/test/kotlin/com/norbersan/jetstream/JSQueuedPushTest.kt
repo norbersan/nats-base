@@ -49,9 +49,9 @@ class JSQueuedPushTest {
             }
         }
 
-        val subscriber1 = JSQueuedPushSubscriber(conn, js, "test","subject.test", "queue", handler)
-        val subscriber2 = JSQueuedPushSubscriber(conn, js, "test","subject.test", "queue", handler)
-        val subscriber3 = JSQueuedPushSubscriber(conn, js, "test","subject.test", "queue", handler)
+        val subscriber1 = JSQueuedPushSubscriber(conn, js, "subject.test", "queue", handler)
+        val subscriber2 = JSQueuedPushSubscriber(conn, js, "subject.test", "queue", handler)
+        val subscriber3 = JSQueuedPushSubscriber(conn, js, "subject.test", "queue", handler)
 
         jsm.logStreamsAndConsumers("After objects subscribed, before any publication")
 

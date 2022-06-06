@@ -15,9 +15,10 @@ class NatsConnectionFactory {
         host: String? = null,
         port: String? = null,
         server: String? = null,
-        servers: List<String>? = null,
+        vararg servers: String,
         jwt: String? = null,
         seed: String? = null,
+        /* internal name of the connection */
         name: String = "default"
     ): Connection {
         log.info("host: $host" )
@@ -33,7 +34,7 @@ class NatsConnectionFactory {
                     if (!server.isNullOrEmpty()) {
                         server(server)
                     } else if (!servers.isNullOrEmpty()){
-                        servers(servers.toTypedArray())
+                        servers(servers)
                     } else{
                         server("nats://localhost:4222")
                     }
@@ -111,6 +112,26 @@ fun JetStreamManagement.logStreamsAndConsumers(header: String){
         log.info(streamInfo.toString())
             getConsumers(streamInfo.configuration.name).forEach{ consumerInfo ->
             log.info(consumerInfo.toString())
+        }
+    }
+}
+
+fun Connection.existsConsumer(consumerName: String) :Boolean {
+    var exists = false
+    val stm = this.jetStreamManagement()
+    stm.streamNames.forEach {streamName ->
+        if (stm.getConsumerNames(streamName).contains(consumerName)){
+            exists = true
+        }
+    }
+    return exists
+}
+
+fun Connection.deleteConsumerIfExists(consumerName: String){
+    val stm = this.jetStreamManagement()
+    stm.streamNames.forEach {streamName ->
+        if (stm.getConsumerNames(streamName).contains(consumerName)){
+            stm.deleteConsumer(streamName, consumerName)
         }
     }
 }

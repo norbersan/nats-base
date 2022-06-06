@@ -1,19 +1,27 @@
 package com.norbersan.jetstream
 
+import com.norbersan.common.deleteConsumerIfExists
 import io.nats.client.*
 import io.nats.client.api.AckPolicy
 import io.nats.client.api.ConsumerConfiguration
 import io.nats.client.api.DeliverPolicy
 import java.time.Duration
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
-class JSPullSubscriber(nc: Connection,
+
+// TODO durable consumer in this case needs to be released/removed/deleted
+class JSPullSubscriber(private val nc: Connection,
                        js: JetStream,
-                       streamName: String,
                        subject: String,
-                       handler: MessageHandler) {
+                       handler: MessageHandler,
+                       private val deleteConsumerOnShutdown: Boolean = true
+) {
 
-    private val durableName = "${UUID.randomUUID()}@@@${subject.replace('.','@')}"
+    private val latch = CountDownLatch(1)
+    val prefix = if(deleteConsumerOnShutdown) UUID.randomUUID().toString() else "consumer"
+    private val durableName = "${prefix}@@@${subject.replace('.','@')}"
     private val consumerConf: ConsumerConfiguration = ConsumerConfiguration.builder().apply {
         ackWait(60*1000)
         ackPolicy(AckPolicy.Explicit)
@@ -23,10 +31,10 @@ class JSPullSubscriber(nc: Connection,
         maxBatch(1)
     }.build()
 
-    val pullOpts = PullSubscribeOptions.builder()
-        .durable(durableName)
-        .configuration(consumerConf)
-        .build()
+    val pullOpts = PullSubscribeOptions.builder().apply {
+        durable(durableName)
+        configuration(consumerConf)
+        }.build()
 
     private var started = true
     init {
@@ -37,10 +45,15 @@ class JSPullSubscriber(nc: Connection,
                 subscription.pull(1)
                 handler.onMessage(subscription.nextMessage(Duration.ofSeconds(1)))
             }
+            latch.count
         }.start()
     }
 
-    fun stop(){
+    fun preDestroy(){
         started = false
+        if (deleteConsumerOnShutdown){
+            latch.await(10, TimeUnit.SECONDS)
+            nc.deleteConsumerIfExists(durableName)
+        }
     }
 }

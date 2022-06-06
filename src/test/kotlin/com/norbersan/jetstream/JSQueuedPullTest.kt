@@ -51,9 +51,9 @@ class JSQueuedPullTest {
             }
         }
 
-        val subscriber1 = JSQueuedPullSubscriber(conn, js, "test","subject.test", "queue", handler)
-        val subscriber2 = JSQueuedPullSubscriber(conn, js, "test","subject.test", "queue", handler)
-        val subscriber3 = JSQueuedPullSubscriber(conn, js, "test","subject.test", "queue", handler)
+        val subscriber1 = JSQueuedPullSubscriber(conn, js, "subject.test", "queue", handler)
+        val subscriber2 = JSQueuedPullSubscriber(conn, js, "subject.test", "queue", handler)
+        val subscriber3 = JSQueuedPullSubscriber(conn, js, "subject.test", "queue", handler)
 
         jsm.logStreamsAndConsumers("After objects subscribed, before any publication")
 
@@ -63,7 +63,7 @@ class JSQueuedPullTest {
         TimeUnit.SECONDS.sleep(10)
         jsm.logStreamsAndConsumers("After first message published")
 
-        arrayOf(subscriber1,subscriber2,subscriber3).forEach { it.stop() }
+        arrayOf(subscriber1,subscriber2,subscriber3).forEach { it.predestroy() }
         Assertions.assertEquals("Received 1 message(s)", "Received ${counter.get()} message(s)")
 
         jsm.logStreamsAndConsumers("At the end of the test")

@@ -51,9 +51,9 @@ class JSNonQueuedPullTest {
             }
         }
 
-        val subscriber1 = JSPullSubscriber(conn, js, "test","subject.test", handler)
-        val subscriber2 = JSPullSubscriber(conn, js, "test","subject.test", handler)
-        val subscriber3 = JSPullSubscriber(conn, js, "test","subject.test", handler)
+        val subscriber1 = JSPullSubscriber(conn, js, "subject.test", handler)
+        val subscriber2 = JSPullSubscriber(conn, js, "subject.test", handler)
+        val subscriber3 = JSPullSubscriber(conn, js, "subject.test", handler)
 
         jsm.logStreamsAndConsumers("After objects subscribed, before any publication")
 
@@ -63,7 +63,7 @@ class JSNonQueuedPullTest {
         TimeUnit.SECONDS.sleep(10)
         jsm.logStreamsAndConsumers("After first message published")
 
-        arrayOf(subscriber1,subscriber2,subscriber3).forEach { it.stop() }
+        arrayOf(subscriber1,subscriber2,subscriber3).forEach { it.preDestroy() }
         Assertions.assertEquals("Received 3 message(s)", "Received ${counter.get()} message(s)")
 
         jsm.logStreamsAndConsumers("At the end of the test")
